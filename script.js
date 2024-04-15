@@ -71,13 +71,22 @@ if (hasGetUserMedia()) {
 DISABLE_WEBCAM_BTN.addEventListener('click', disableCam);
 
 function disableCam() {
-  VIDEO.srcObject.getTracks().forEach(track => track.stop());
+  // Stop the video stream
+  if (VIDEO.srcObject) {
+    VIDEO.srcObject.getTracks().forEach(track => track.stop());
+  }
 
-  STEP_1.classList.remove('invisible');
-
+  // Update the UI
+  DISABLE_WEBCAM_BTN.classList.add('removed');
   ENABLE_WEBCAM_BTN.classList.remove('removed');
-  ENABLE_WEBCAM_BTN.addEventListener('click', enableCam);
-
+  
+  if (hasGetUserMedia()) {
+    ENABLE_WEBCAM_BTN.addEventListener('click', enableCam);
+    console.log('working')
+  } else {
+    console.warn('getUserMedia() is not supported by your browser');
+  }
+  STEP_1.classList.remove('invisible');
   STEP_2.classList.add('invisible');
   STEP_3.classList.add('invisible');
   STEP_4.classList.add('invisible');
@@ -87,6 +96,7 @@ function disableCam() {
   lastNaughtyAnimalCount = 0;
   sendAlerts = true;
   foundMonitoredObjects = [];
+  model = undefined; // Reset the model so it needs to be loaded again
 }
 
 
