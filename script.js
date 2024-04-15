@@ -8,6 +8,7 @@ const MIN_ALERT_COOLDOWN_TIME = 3;
 const STEP_1 = document.getElementById('step1');
 const STEP_2 = document.getElementById('step2');
 const STEP_3 = document.getElementById('step3');
+const STEP_4 = document.getElementById('step4')
 
 const DISABLE_WEBCAM_BTN = document.getElementById('disable_webcam')
 const ENABLE_WEBCAM_BTN = document.getElementById('webcamButton');
@@ -39,6 +40,7 @@ var foundMonitoredObjects = [];
 // Before we can use COCO-SSD class we must wait for it to finish
 // loading. Machine Learning models can be large and take a moment to
 // get everything needed to run. Only loaded once on page load.
+
 cocoSsd.load().then(function(loadedModel) {
   model = loadedModel;
   // Show demo section now model is ready to use.
@@ -66,6 +68,26 @@ if (hasGetUserMedia()) {
 // if (hasGetUserMedia()){
 //   DISABLE_WEBCAM_BTN.addEventListener('click',disableCam)
 // }
+DISABLE_WEBCAM_BTN.addEventListener('click', disableCam);
+
+function disableCam() {
+  VIDEO.srcObject.getTracks().forEach(track => track.stop());
+
+  STEP_1.classList.remove('invisible');
+
+  ENABLE_WEBCAM_BTN.classList.remove('removed');
+  ENABLE_WEBCAM_BTN.addEventListener('click', enableCam);
+
+  STEP_2.classList.add('invisible');
+  STEP_3.classList.add('invisible');
+  STEP_4.classList.add('invisible');
+
+  // Reset the state
+  state = 'setup';
+  lastNaughtyAnimalCount = 0;
+  sendAlerts = true;
+  foundMonitoredObjects = [];
+}
 
 
 // Enable the live webcam view and start classification.
@@ -74,7 +96,6 @@ function enableCam(event) {
     console.log('Wait! Model not loaded yet.');
     return;
   }
-
   // Optional: Go full screen.
 
   // document.documentElement.requestFullscreen({
@@ -86,7 +107,8 @@ function enableCam(event) {
   event.target.classList.add('removed');
   
   // Fade GUI step 1 and setup step 2.
-  STEP_1.classList.add('disabled');
+  //STEP_1.classList.add('disabled');
+  STEP_1.classList.add('invisible')
   STEP_2.setAttribute('class', 'invisible');
 
   // getUsermedia parameters.
@@ -183,9 +205,10 @@ function predictWebcam() {
           if (predictions[n].class === CHOSEN_ITEM.value) {
             state = 'monitoring';
             // We see the object we should be monitoring. Update GUI.
-            STEP_1.classList.remove('grayscale');
+            //STEP_1.classList.remove('grayscale');
             STEP_1.classList.remove('disabled');
             STEP_3.classList.add('invisible');
+            STEP_4.setAttribute('class','')
             MONITORING_TEXT.setAttribute('class', '');
             setTimeout(function() {
               STEP_3.setAttribute('class', 'removed');

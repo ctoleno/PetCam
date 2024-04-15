@@ -18,7 +18,7 @@
     <header>
       <h1>Pet Cam</h1>
       <p>Dashboard</p>
-      <button id="disable_webcam" class="circularButton disabled">
+      <button id="disable_webcam" class="circularButton">
           Disable Webcam
         </button>
       <p id="monitoring" class="invisible">Monitoring</p>
@@ -33,21 +33,24 @@
         <button id="webcamButton" class="circularButton disabled">
           Enable Webcam
         </button>
-        <video id="webcam" autoplay></video>
+        
       </div>
     </section>
 
     <section id="step2" class="removed">
+      
       <label for="pet">Great! Now select what pet you want to recognize:</label>
       <select name="pet" id="pet">
+        <option value="person">Person</option>
         <option value="cat">Cat</option>
         <option value="dog">Dog</option>
         <option value="bird">Bird</option>
-        <option value="person">Person</option>
+        
       </select>
 
       <label for="item">Send alert to user when they are near</label>
       <select name="item" id="item">
+        <option value="cell phone">Cell Phone</option>
         <option value="bed">Bed</option>
         <option value="bowl">Bowl</option>
         <option value="chair">Chair</option>
@@ -57,20 +60,30 @@
         <option value="refrigerator">Refrigerator</option>
         <option value="tv">Television</option>
         <option value="toilet">Toilet</option>
-        <option value="cell phone">Cell Phone</option>
       </select>
 
       <button id="enableDetection" class="circularButton">
         Enable Detection
       </button>
+      
+      
     </section>
 
     <section id="step3" class="removed">
+      
       <p>
         Please place camera in view of <span id="chosenItem"></span> to start
         monitoring
       </p>
+      
     </section>
+
+    <section id = "step4" class = "removed">
+      <video id="webcam" autoplay></video>
+
+    </section>
+    
+
 
     <!-- Import TensorFlow.js library -->
     <script
