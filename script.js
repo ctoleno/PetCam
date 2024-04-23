@@ -229,7 +229,7 @@ function predictWebcam() {
         
         if(state === 'searching') {
           renderFoundObject(predictions[n]);
-          
+          STEP_4.setAttribute('class','disabled')
           // Check to see if desired object is in frame.
           if (predictions[n].class === CHOSEN_ITEM.value) {
             state = 'monitoring';
@@ -237,7 +237,7 @@ function predictWebcam() {
             //STEP_1.classList.remove('grayscale');
             STEP_1.classList.remove('disabled');
             STEP_3.classList.add('invisible');
-            STEP_4.setAttribute('class','')
+            //STEP_4.setAttribute('class','')
             MONITORING_TEXT.setAttribute('class', '');
             setTimeout(function() {
               STEP_3.setAttribute('class', 'removed');
