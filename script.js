@@ -85,7 +85,7 @@ DISABLE_WEBCAM_BTN.addEventListener('click', disableCam);
 
 function disableCam() {
   // Stop the video stream
-  
+  MONITORING_TEXT.classList.add('invisible')
   if (VIDEO.srcObject) {
     VIDEO.srcObject.getTracks().forEach(track => track.stop());
   }
@@ -106,7 +106,7 @@ function disableCam() {
   STEP_4.classList.add('invisible');
 
   // Reset the state
-  //state = 'setup';
+  state = 'setup';
   lastNaughtyAnimalCount = 0;
   sendAlerts = true;
   foundMonitoredObjects = [];
@@ -172,7 +172,7 @@ function sendImageData(blob, email, subject) {
     body: formData
   })
   .then(response => response.json())
-  .then(data => console.log('Email sent successfully'))
+  .then(data => console.log('Email sent successfully to ', addressToSendTo))
   .catch(error => console.error('Error sending email:', error));
 }
 

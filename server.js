@@ -32,9 +32,9 @@ app.post('/send-email', (req, res) => {
   // Create the email options
   const mailOptions = {
     from: '1ae3a7fb-5a57-40d7-8590-95a038fd587d@mailslurp.mx',
-    to: "christiantoleno@gmail.com",
+    to: email, // Use the email address from the request body
     subject: subject,
-    text:"Your pet is being naughty!",
+    text: "Your pet is being naughty!",
     attachments: [
       {
         filename: 'capture.png',
@@ -51,7 +51,7 @@ app.post('/send-email', (req, res) => {
       res.status(500).json({ error: 'Error sending email' });
     } else {
       console.log('Email sent:', info.response);
-      res.status(200).json({ message: 'Email sent successfully' });
+      res.status(200).json({ message: 'Email sent successfully to ', email });
     }
   });
 });
