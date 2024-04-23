@@ -51,35 +51,10 @@ li,
 fieldset,
 form,
 label,
-legend,
-table,
-caption,
-tbody,
-tfoot,
-thead,
-tr,
-th,
-td,
-article,
-aside,
-canvas,
-details,
-embed,
-figure,
-figcaption,
-footer,
-header,
-hgroup,
-menu,
-nav,
-output,
-ruby,
-section,
-summary,
-time,
-mark,
-audio,
-video {
+legend,table,caption,tbody,tfoot,thead,tr,th,td,article,aside,canvas,details,embed,figure,figcaption,
+footer,header,hgroup,menu,nav,
+output,ruby,section,summary,time,mark,
+audio,video {
   margin: 0;
   padding: 0;
   border: 0;
@@ -236,6 +211,7 @@ section {
 
 .invisible {
   opacity: 0;
+  z-index: -999;
 }
 
 .videoView {
@@ -321,6 +297,7 @@ section {
 
 #step2 {
   background: rgba(22, 22, 22, 0.7);
+  z-index:-9;
 }
 
 #step3 p {
@@ -333,6 +310,9 @@ section {
 
 #step3 p span {
   font-weight: bold;
+}
+#step4{
+  transition: opacity 500ms ease-in-out;
 }
 
 #monitoring {

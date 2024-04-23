@@ -3,7 +3,7 @@ const CAM_HEIGHT = 480;
 const MIN_DETECTION_CONFIDENCE = 0.5;
 const ANIMATION_TIME = 500;
 // Min number of seconds before we send another alert.
-const MIN_ALERT_COOLDOWN_TIME = 3;
+const MIN_ALERT_COOLDOWN_TIME = 10;
 
 const STEP_1 = document.getElementById('step1');
 const STEP_2 = document.getElementById('step2');
@@ -41,6 +41,19 @@ var foundMonitoredObjects = [];
 // loading. Machine Learning models can be large and take a moment to
 // get everything needed to run. Only loaded once on page load.
 
+
+
+const saveEmailBtn = document.getElementById('saveEmailButton');
+var addressToSendTo = "christiantoleno@gmail.edu"; // Variable to store the email address
+
+saveEmailBtn.addEventListener('click', function() {
+    const emailInput = document.getElementById('emailInput');
+    addressToSendTo = emailInput.value;
+    console.log("Email address saved:", addressToSendTo); // Confirm email is saved
+    // Optionally clear the input after saving
+    //emailInput.value = '';
+});
+
 cocoSsd.load().then(function(loadedModel) {
   model = loadedModel;
   // Show demo section now model is ready to use.
@@ -72,31 +85,32 @@ DISABLE_WEBCAM_BTN.addEventListener('click', disableCam);
 
 function disableCam() {
   // Stop the video stream
+  
   if (VIDEO.srcObject) {
     VIDEO.srcObject.getTracks().forEach(track => track.stop());
   }
 
   // Update the UI
-  DISABLE_WEBCAM_BTN.classList.add('removed');
+  //DISABLE_WEBCAM_BTN.classList.add('removed');
   ENABLE_WEBCAM_BTN.classList.remove('removed');
   
-  if (hasGetUserMedia()) {
-    ENABLE_WEBCAM_BTN.addEventListener('click', enableCam);
-    console.log('working')
-  } else {
-    console.warn('getUserMedia() is not supported by your browser');
-  }
+  // if (hasGetUserMedia()) {
+  //   ENABLE_WEBCAM_BTN.addEventListener('click', enableCam);
+  //   console.log('working')
+  // } else {
+  //   console.warn('getUserMedia() is not supported by your browser');
+  // }
   STEP_1.classList.remove('invisible');
   STEP_2.classList.add('invisible');
   STEP_3.classList.add('invisible');
   STEP_4.classList.add('invisible');
 
   // Reset the state
-  state = 'setup';
+  //state = 'setup';
   lastNaughtyAnimalCount = 0;
   sendAlerts = true;
   foundMonitoredObjects = [];
-  model = undefined; // Reset the model so it needs to be loaded again
+  //  model = undefined; // Reset the model so it needs to be loaded again
 }
 
 
@@ -117,7 +131,7 @@ function enableCam(event) {
   event.target.classList.add('removed');
   
   // Fade GUI step 1 and setup step 2.
-  //STEP_1.classList.add('disabled');
+  //STEP_1.classList.add('invisible');
   STEP_1.classList.add('invisible')
   STEP_2.setAttribute('class', 'invisible');
 
@@ -146,6 +160,21 @@ function enableCam(event) {
   });
 }
 
+function sendImageData(blob, email, subject) {
+  const formData = new FormData();
+  const imageFile = new File([blob], 'capture.png', { type: 'image/png' });
+  formData.append('image', imageFile);
+  formData.append('email', email);
+  formData.append('subject', subject);
+
+  fetch('http://localhost:3000/send-email', {
+    method: 'POST',
+    body: formData
+  })
+  .then(response => response.json())
+  .then(data => console.log('Email sent successfully'))
+  .catch(error => console.error('Error sending email:', error));
+}
 
 function renderFoundObject(prediction) {
   const p = document.createElement('p');
@@ -154,31 +183,21 @@ function renderFoundObject(prediction) {
     ' - with ' +
     Math.round(parseFloat(prediction.score) * 100) +
     '% confidence.';
-  // Draw in top left of bounding box outline.
-  p.style =
-    'left: ' +
-    prediction.bbox[0] * ratioX +
-    'px;' +
-    'top: ' +
-    prediction.bbox[1] * ratioY +
-    'px;' +
-    'width: ' +
-    (prediction.bbox[2] * ratioX - 10) +
-    'px;';
+
+  // Set position to absolute and use percentages for left, top, width, and height
+  p.style.position = 'absolute';
+  p.style.left = (prediction.bbox[0] / VIDEO.videoWidth) * 100 + '%';
+  p.style.top = (prediction.bbox[1] / VIDEO.videoHeight) * 100 + '%';
+  p.style.width = (prediction.bbox[2] / VIDEO.videoWidth) * 100 + '%';
 
   // Draw the actual bounding box.
   const highlighter = document.createElement('div');
   highlighter.setAttribute('class', 'highlighter');
-  highlighter.style =
-    'left: ' +
-    prediction.bbox[0] * ratioX +
-    'px; top: ' +
-    prediction.bbox[1] * ratioY +
-    'px; width: ' +
-    prediction.bbox[2] * ratioX +
-    'px; height: ' +
-    prediction.bbox[3] * ratioY +
-    'px;';
+  highlighter.style.position = 'absolute';
+  highlighter.style.left = (prediction.bbox[0] / VIDEO.videoWidth) * 100 + '%';
+  highlighter.style.top = (prediction.bbox[1] / VIDEO.videoHeight) * 100 + '%';
+  highlighter.style.width = (prediction.bbox[2] / VIDEO.videoWidth) * 100 + '%';
+  highlighter.style.height = (prediction.bbox[3] / VIDEO.videoHeight) * 100 + '%';
 
   LIVE_VIEW.appendChild(highlighter);
   LIVE_VIEW.appendChild(p);
@@ -295,73 +314,46 @@ function cooldown() {
 // Function to create the alert detection object we wish to send with all useful details.
 function sendAlert(naughtyAnimals) {
   var detectionEvent = {};
-  // Epoch of detection time.
+  console.log("Your naughty " + CHOSEN_PET.value + " was near a " + CHOSEN_ITEM.value + "!");
   detectionEvent.dateTime = Date.now();
-
   detectionEvent.eventData = [];
- 
-  for (let i = 0; i < foundMonitoredObjects.length; i++) {
-    var event = {};
 
-    // A meaningful string for the event that occured. For example:
-    // 'couch_cat'
-    event.eventType = foundMonitoredObjects[i].class + '_' + CHOSEN_ITEM.value;
-    
-    // How confident are we in our detection of the animal.
-    event.score = foundMonitoredObjects[i].score;
-    
-    // Bounding box data for monitord object eg "couch".
-    // Here we convert values to be represented as  percentage poisitons 
-    // and widths/heights so agnostic to any image resizing when shown in
-    // Admin GUI vs original image size from webcam.
-    event.x1 = foundMonitoredObjects[i].bbox[0] / VIDEO.videoWidth;
-    event.y1 = foundMonitoredObjects[i].bbox[1] / VIDEO.videoHeight;
-    event.width = foundMonitoredObjects[i].bbox[2] / VIDEO.videoWidth;
-    event.height = foundMonitoredObjects[i].bbox[3] / VIDEO.videoHeight;
-   
-    // Array of bounding boxes as multiple objects possibly being 
-    // detected for a given monitore region
-    event.detections = [];
-    
-    for (let n = 0; n < naughtyAnimals.length; n ++) {
-      let animal = {};
-      // Class of animal detected.
-      animal.objectType = naughtyAnimals[n].class;
-      // Confidence of found animal as percentage.
-      animal.score = naughtyAnimals[n].score;
-      // Bounding box for this found animal.
-      animal.x1 = naughtyAnimals[n].bbox[0] / VIDEO.videoWidth;
-      animal.y1 = naughtyAnimals[n].bbox[1] / VIDEO.videoHeight;
-      animal.width = naughtyAnimals[n].bbox[2] / VIDEO.videoWidth;
-      animal.height = naughtyAnimals[n].bbox[3] / VIDEO.videoHeight;
-      
-      event.detections.push(animal);
-    }
-    
-    detectionEvent.eventData.push(event);
+  for (let i = 0; i < foundMonitoredObjects.length; i++) {
+      var event = {};
+      event.eventType = foundMonitoredObjects[i].class + '_' + CHOSEN_ITEM.value;
+      event.score = foundMonitoredObjects[i].score;
+      event.x1 = foundMonitoredObjects[i].bbox[0] / VIDEO.videoWidth;
+      event.y1 = foundMonitoredObjects[i].bbox[1] / VIDEO.videoHeight;
+      event.width = foundMonitoredObjects[i].bbox[2] / VIDEO.videoWidth;
+      event.height = foundMonitoredObjects[i].bbox[3] / VIDEO.videoHeight;
+      event.detections = [];
+
+      for (let n = 0; n < naughtyAnimals.length; n++) {
+          let animal = {};
+          animal.objectType = naughtyAnimals[n].class;
+          animal.score = naughtyAnimals[n].score;
+          animal.x1 = naughtyAnimals[n].bbox[0] / VIDEO.videoWidth;
+          animal.y1 = naughtyAnimals[n].bbox[1] / VIDEO.videoHeight;
+          animal.width = naughtyAnimals[n].bbox[2] / VIDEO.videoWidth;
+          animal.height = naughtyAnimals[n].bbox[3] / VIDEO.videoHeight;
+          event.detections.push(animal);
+      }
+
+      detectionEvent.eventData.push(event);
   }
 
-  
-  CTX.drawImage(VIDEO, 0, 0);
-  // Get image from canvas as blob.
+  // Capture the current video frame in the canvas
+  CTX.drawImage(VIDEO, 0, 0, VIDEO.videoWidth, VIDEO.videoHeight);
   CANVAS.toBlob(function(blob) {
-    detectionEvent.img = blob;
-  
-  
-    var timestamp = new Date().toISOString().replace(/:/g, '-'); // Replace colons with dashes to make it a valid filename
-    var filename = 'PetCamCapture_' + timestamp + '.png';
-    var url = URL.createObjectURL(blob);
-    var a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
+      // Prepare the email content
+      const emailSubject = `Alert: Your naughty ${CHOSEN_PET.value} is near a ${CHOSEN_ITEM.value}!`;
+      const emailBody = JSON.stringify(detectionEvent);  // Convert event data to JSON string
 
-    // Finally print the full object we constructed or actually send the JSON version of it to the backend.
-    console.log(detectionEvent);
+      // Send the image and the detection data to your server
+      sendImageData(blob, addressToSendTo, emailSubject, emailBody);
   }, 'image/png');
 }
+
 
 
 // Look for naughty animals in the image!
@@ -416,6 +408,20 @@ function enableDetection() {
     state = 'searching';
   }, ANIMATION_TIME);
 }
+
+
+
+
+
+// Example usage when you want to send an email
+const videoElement = document.querySelector('video');  // Assuming you have a video element
+const canvas = document.createElement('canvas');
+canvas.width = videoElement.videoWidth;
+canvas.height = videoElement.videoHeight;
+const ctx = canvas.getContext('2d');
+ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+
+
 
 
 window.addEventListener("resize", recalculateVideoScale);
