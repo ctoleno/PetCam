@@ -1,5 +1,5 @@
 const openai = require('openai');
-const OPENAI_API_KEY = env.OPENAI_API_KEY;
+// const OPENAI_API_KEY = env.OPENAI_API_KEY;
 
 
 
@@ -19,47 +19,47 @@ app.use(express.json());
 
 
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY // This is also the default, can be omitted
-});
+// const openai = new OpenAI({
+//   apiKey: process.env.OPENAI_API_KEY // This is also the default, can be omitted
+// });
 
-app.post('/send-nutrition', async (req, res) => {
-    const { organizedNutrition, productTitle, ingredients, servingsPerContainer, servingSize, userQuestion } = req.body;
+// app.post('/send-nutrition', async (req, res) => {
+//     const { organizedNutrition, productTitle, ingredients, servingsPerContainer, servingSize, userQuestion } = req.body;
 
-    // Create a detailed description of the nutrition information
-    const nutritionDetails = organizedNutrition.map(item => {
-        const details = item.details.join(", ");
-        return `${item.category}: ${details}`;
-    }).join("; ");
+//     // Create a detailed description of the nutrition information
+//     const nutritionDetails = organizedNutrition.map(item => {
+//         const details = item.details.join(", ");
+//         return `${item.category}: ${details}`;
+//     }).join("; ");
 
-    const summary = `The nutrition information for ${productTitle} is as follows: 
-    - Serving Size: ${servingSize}
-    - Servings Per Container: ${servingsPerContainer}
-    - Nutrition Details: ${nutritionDetails}
-    - Ingredients: ${ingredients}`;
+//     const summary = `The nutrition information for ${productTitle} is as follows: 
+//     - Serving Size: ${servingSize}
+//     - Servings Per Container: ${servingsPerContainer}
+//     - Nutrition Details: ${nutritionDetails}
+//     - Ingredients: ${ingredients}`;
 
-    const prompt = "Based on the above product information, answer the following question:"
+//     const prompt = "Based on the above product information, answer the following question:"
 
-    const finalPrompt = summary + '\n' + prompt + '\n' + userQuestion;
+//     const finalPrompt = summary + '\n' + prompt + '\n' + userQuestion;
 
-    try {
-        const response = await openai.chat.completions.create({
-            model: "gpt-3.5-turbo", // Adjust based on the model you'd like to use
-            messages: [{
-                role: "user",
-                content: finalPrompt
-              }],
-            temperature: 0.5,
-            max_tokens: 100,
-        });
-        console.log(finalPrompt + "\n");
-        console.log(response.choices[0].message.content); // Log the AI's response
-        res.json({ message: "Nutritional information received successfully", aiResponse: response.choices[0].message.content });
-    } catch (error) {
-        console.error("Error calling OpenAI:", error);
-        res.status(500).json({ message: "Error processing nutritional information" });
-    }
-});
+//     try {
+//         const response = await openai.chat.completions.create({
+//             model: "gpt-3.5-turbo", // Adjust based on the model you'd like to use
+//             messages: [{
+//                 role: "user",
+//                 content: finalPrompt
+//               }],
+//             temperature: 0.5,
+//             max_tokens: 100,
+//         });
+//         console.log(finalPrompt + "\n");
+//         console.log(response.choices[0].message.content); // Log the AI's response
+//         res.json({ message: "Nutritional information received successfully", aiResponse: response.choices[0].message.content });
+//     } catch (error) {
+//         console.error("Error calling OpenAI:", error);
+//         res.status(500).json({ message: "Error processing nutritional information" });
+//     }
+// });
 
 
 
