@@ -51,7 +51,7 @@ saveEmailBtn.addEventListener('click', function() {
     addressToSendTo = emailInput.value;
     console.log("Email address saved:", addressToSendTo); // Confirm email is saved
     // Optionally clear the input after saving
-    //emailInput.value = '';
+    emailInput.value = '';
 });
 
 cocoSsd.load().then(function(loadedModel) {
@@ -85,7 +85,7 @@ DISABLE_WEBCAM_BTN.addEventListener('click', disableCam);
 
 function disableCam() {
   // Stop the video stream
-  MONITORING_TEXT.classList.add('invisible')
+  MONITORING_TEXT.classList.add("invisible")
   if (VIDEO.srcObject) {
     VIDEO.srcObject.getTracks().forEach(track => track.stop());
   }
@@ -106,7 +106,7 @@ function disableCam() {
   STEP_4.classList.add('invisible');
 
   // Reset the state
-  state = 'setup';
+  //state = 'setup';
   lastNaughtyAnimalCount = 0;
   sendAlerts = true;
   foundMonitoredObjects = [];
@@ -237,7 +237,7 @@ function predictWebcam() {
             //STEP_1.classList.remove('grayscale');
             STEP_1.classList.remove('disabled');
             STEP_3.classList.add('invisible');
-            //STEP_4.setAttribute('class','')
+            STEP_4.setAttribute('class','')
             MONITORING_TEXT.setAttribute('class', '');
             setTimeout(function() {
               STEP_3.setAttribute('class', 'removed');
@@ -345,12 +345,87 @@ function sendAlert(naughtyAnimals) {
   // Capture the current video frame in the canvas
   CTX.drawImage(VIDEO, 0, 0, VIDEO.videoWidth, VIDEO.videoHeight);
   CANVAS.toBlob(function(blob) {
-      // Prepare the email content
-      const emailSubject = `Alert: Your naughty ${CHOSEN_PET.value} is near a ${CHOSEN_ITEM.value}!`;
-      const emailBody = JSON.stringify(detectionEvent);  // Convert event data to JSON string
-
+      // Convert the event data to JSON string
+      const emailSubject = `Alert: Your ${CHOSEN_PET.value} is near a ${CHOSEN_ITEM.value}!`;
+      const emailBody = JSON.stringify(detectionEvent);
       // Send the image and the detection data to your server
       sendImageData(blob, addressToSendTo, emailSubject, emailBody);
+
+    const fullProductData = {
+      "organizedNutrition": {
+        "Cholesterol": {
+          "category": "Cholesterol",
+          "details": ["Omg"]
+        },
+        "Protein": {
+          "category": "Protein",
+          "details": ["4g"]
+        },
+        "Sodium": {
+          "category": "Sodium",
+          "details": ["280mg"]
+        },
+        "Total Carbohydrate": {
+          "category": "Total Carbohydrate",
+          "details": [
+            "24g",
+            "Dietary Fiber 19",
+            "Total Sugars 5g",
+            "Includes 5g Added Sugars"
+          ]
+        },
+        "Total Fat": {
+          "category": "Total Fat",
+          "details": [
+            "9g",
+            "Saturated Fat 1.5g",
+            "Trans Fat 0g",
+            "Polyunsaturated Fat 11.6g",
+            "Monounsaturated Fat 7.7g"
+          ]
+        }
+      },
+      "productTitle": "Keebler Crackers Keebler Sandwich Crackers, Toast and Peanut Butter, Snacking Made Easy Single Serve, 8ct 11oz",
+      "ingredients": "enriched flour (wheat flour, niacin, reduced iron, vitamin b1 (thiamin mononitrate), vitamin b2 (riboflavin), folic acid), peanut butter (roasted peanuts), soybean oil (with TBHQ for freshness), sugar, dextrose.Contains 2% or less of salt, malt powder (malted barley flour, wheat flour, dextrose), leavening (baking soda, monocalcium phosphate), soy lecithin, whey.",
+      "servingSize": "39.00 g",
+      "userQuestion": "is this product vegetarian friendly"
+    };
+    
+
+
+    console.log('Sending Full Product Data and Question:', JSON.stringify(fullProductData, null, 2)); // Debugging output
+
+    // Send the data to the server
+    fetch('http://localhost:3000/send-nutrition', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(fullProductData),
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Server response:', JSON.stringify(data, null, 2));
+            document.getElementById('aiResponse').textContent = data.aiResponse || "No response from AI.";
+    })
+    .catch(error => console.error('Error:', error));
+      
+      // const gptPrompt = `Please write me 2-3 sentences recommending what you would do given this alert: ${emailSubject}`
+
+      // const requestBody = { prompt: gptPrompt };
+      // console.log(JSON.stringify(requestBody, null, 2));
+      // fetch('http://localhost:3000/get-gpt-advice', {
+      //     method: 'POST',
+      //     headers: {
+      //         'Content-Type': 'application/json',
+      //     },
+      //     body: JSON.stringify(requestBody)
+      // }).then(response => response.json())
+      // .then(data => {
+      //     console.log('GPT-3 Advice:', data);
+      // }).catch(error => {
+      //     console.error('Error getting advice from GPT-3:', error);
+      // });
   }, 'image/png');
 }
 

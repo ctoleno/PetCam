@@ -266,7 +266,7 @@ section {
   height: 60px;
   position: absolute;
   top: 9%;
-  left: 50%;
+  left: 91%;
   transform: translate(-50%, -50%);
   background-image: url('https://img.freepik.com/premium-vector/stop-camera-icon-white-background_251661-45.jpg');
   background-position: center;
@@ -321,8 +321,7 @@ section {
   font-weight: bold;
   font-style: normal;
   text-transform: lowercase;
-  position: absolute;
-  right: 20px;
+  position: center;
   top: 60px;
   transition: opacity 500ms ease-in-out;
 }
